@@ -1,5 +1,5 @@
 from flask import Flask
-from server.config import db, jwt, Config
+from server.config import db, Config
 
 def create_app():
     app = Flask(__name__)
@@ -7,7 +7,6 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
-    jwt.init_app(app)
 
     # from server.auth.models import User
     # from server.posts.models import Post
