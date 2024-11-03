@@ -61,8 +61,11 @@ def signup():
             )
 
             # Add the new user to the session and commit
-            db.session.add(new_user)
-            db.session.commit()
+            try:
+                db.session.add(new_user)
+                db.session.commit()
+            except:
+                return jsonify({"message": "Fields conflict with existing users", "user_id": new_user.id}), 201
 
             return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
         return jsonify({"message": "User does not exist", "user_id": id}), 400
