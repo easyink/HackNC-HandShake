@@ -1,6 +1,5 @@
 from server.config import db
 
-# Association table for the many-to-many relationship
 connections = db.Table(
     'connections',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
@@ -19,9 +18,9 @@ class User(db.Model):
 
     outgoing_connections = db.relationship(
         'User',
-        secondary='user_connections',
-        primaryjoin=(id == db.ForeignKey('user_connections.user_id')),
-        secondaryjoin=(id == db.ForeignKey('user_connections.connection_id')),
+        secondary=connections,
+        primaryjoin=(id == connections.c.user_id),
+        secondaryjoin=(id == connections.c.connection_id),
         backref=db.backref('incoming_connections', lazy='dynamic'),
         lazy='dynamic'
     )
@@ -35,8 +34,9 @@ class User(db.Model):
     snapchat = db.Column(db.String(120), unique=True)
     other = db.Column(db.String(120))
 
-    def __init__(self, name, phone_number, bio=None, interests=None, songs=None, 
+    def __init__(self, name, phone_number, id=None, bio=None, interests=None, songs=None, 
                  handshake_card=None, instagram=None, snapchat=None, other=None):
+        self.id = id
         self.name = name
         self.phone_number = phone_number
         self.bio = bio
@@ -46,10 +46,3 @@ class User(db.Model):
         self.instagram = instagram
         self.snapchat = snapchat
         self.other = other
-
-
-class UserConnections(db.Model):
-    __tablename__ = 'user_connections'
-    
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    connection_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
