@@ -8,7 +8,8 @@ from flask import request, jsonify
 from server.auth.models import User
 from server.config import db
 
-cred = credentials.Certificate("firebase.json")
+# cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
+cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
 firebase_admin.initialize_app(cred)
 
 def verify_firebase_token(id_token):

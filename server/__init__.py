@@ -12,8 +12,8 @@ def create_app():
     # from server.posts.models import Post
     # from server.images.models import Image
 
-    # from server.auth import auth_bp
-    # app.register_blueprint(auth_bp)
+    from server.auth import auth_bp
+    app.register_blueprint(auth_bp)
 
     # from server.posts import posts_bp
     # app.register_blueprint(posts_bp)

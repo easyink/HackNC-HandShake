@@ -70,3 +70,11 @@ node_modules/
 .dataconnect
 
 server/auth/firebase.json
+
+server/auth/handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json
+
+server/__pycache__/
+
+.vs/
+
+server/auth/__pycache__/
