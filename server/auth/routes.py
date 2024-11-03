@@ -33,7 +33,9 @@ def signup():
         # Extract data from request
         token = request.headers.get("Authorization")
         id = verify_firebase_token(token)
-        if id:
+        print(token)
+        print(id)
+        if token and id:
             name = data.get("name")
             phone_number = data.get("phoneNumber")
             bio = data.get("bio")
@@ -63,7 +65,7 @@ def signup():
             db.session.commit()
 
             return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
-        return jsonify({"message": "User does not exist", "user_id": new_user.id}), 400
+        return jsonify({"message": "User does not exist", "user_id": id}), 400
 
 @auth_bp.route('/get_public_data/<int:user_id>/<int:requester_id>', methods=['GET'])
 def get_public_data(user_id, requester_id):
@@ -103,7 +105,9 @@ def get_all_user_data(user_id):
     """
     Retrieve all data for a specific user by user_id, if the requesting user has an incoming connection with this user.
     """
-    requesting_user_id = request.json.get("requesting_user_id")
+    token = request.headers.get("Authorization")
+    requesting_user_id = verify_firebase_token(token)
+
     if not requesting_user_id:
         return jsonify({"error": "Requesting user ID is required"}), 400
 
