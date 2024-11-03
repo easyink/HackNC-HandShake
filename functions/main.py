@@ -8,6 +8,8 @@ from flask import jsonify
 
 import hashlib
 
+import requests
+
 initialize_app()
 
 # # input_json
@@ -145,10 +147,40 @@ def request_public_data(input_pid_json):
 
 	return public_data
 
+@https_fn.on_call()
+def handshake_inquiry(data_json):
 
-def handshake_inquiry(request_id, sender_id, recipient_id):
+	request_id = data_json.data.get('request_id')
+	sender_id = data_json.data.get('sender_id')
+	recipient_id = data_json.data.get('recipient_id')
+
+
+	# request_id, sender_id, recipient_id):
 	#push notification the request to the recipient
 	print("sending to recipient phone!")
+
+	# server_key = '816692524475' this has been sunset
+
+	db = firestore.client()
+
+
+	recipient_token = db.collection("Users").document(recipient_id).get('token')
+	payload = {
+  "message": {
+    "token": recipient_token,
+    "notification": {
+      "title": "A user wants to connect with you!",
+      "body": "please send handshake."
+    },
+    "data": {
+      "sender_id": sender_id
+    }
+  }
+}
+
+	response = requests.post("https://fcm.googleapis.com/fcm/send", json=payload)
+
+
 
 @https_fn.on_call()
 def request_handshake(id_json):
