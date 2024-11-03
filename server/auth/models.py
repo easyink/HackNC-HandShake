@@ -11,7 +11,7 @@ class User(db.Model):
     
     id = db.Column(db.String, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    phone_number = db.Column(db.BigInteger, nullable=False, unique=True)
+    phone_number = db.Column(db.String, nullable=False, unique=True)
     bio = db.Column(db.String(500))
     interests = db.Column(db.JSON)
     songs = db.Column(db.JSON)

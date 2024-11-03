@@ -19,7 +19,6 @@ def verify_firebase_token(id_token):
     try:
         # Verify the Firebase ID token
         decoded_token = auth.verify_id_token(id_token)
-        print(decoded_token)
         uid = decoded_token['uid']
         # Perform any additional checks or authentication steps here
         return uid  # or other information you want to use
