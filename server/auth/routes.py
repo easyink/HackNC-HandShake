@@ -4,9 +4,14 @@ from server.auth import auth_bp
 from server.config import db
 import firebase_admin
 from firebase_admin import auth, credentials, initialize_app
+import os
 
 # cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
-cred = credentials.Certificate("C:\\Users\\Erdem\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-dc4158f89c.json")
+# cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
+current_directory = os.path.dirname(os.path.abspath(__file__))
+firebase_path = os.path.join(current_directory, 'firebase.json')
+
+cred = credentials.Certificate(firebase_path)
 firebase_admin.initialize_app(cred)
 
 def verify_firebase_token(id_token):
@@ -28,7 +33,7 @@ def signup():
         # Extract data from request
         token = request.headers.get("Authorization")
         id = verify_firebase_token(token)
-        if token:
+        if id:
             name = data.get("name")
             phone_number = data.get("phoneNumber")
             bio = data.get("bio")
@@ -82,6 +87,7 @@ def get_public_data(user_id, requester_id):
 
     # Construct the public data response
     public_data = {
+        "name": user.name,
         "bio": user.bio,
         "interests": intersecting_interests,
         "songs": user.songs,
