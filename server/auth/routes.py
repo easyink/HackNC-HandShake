@@ -172,3 +172,26 @@ def sort_connections_by_songs(user_id):
     sorted_connections = sorted(connections_with_song_count, key=lambda x: x['mutual_song_count'], reverse=True)
 
     return jsonify(sorted_connections), 200
+
+@auth_bp.route("/connect/<int:id>", methods=["POST"])
+def connect(id):
+    # Assuming the `requesting_user_id` is passed in the request's JSON payload.
+    requesting_user_id = request.json.get("requesting_user_id")
+    
+    if not requesting_user_id:
+        return jsonify({"error": "Requesting user ID is required"}), 400
+
+    # Retrieve the requesting user and the user to connect
+    requesting_user = User.query.get(requesting_user_id)
+    target_user = User.query.get(id)
+
+    if not requesting_user or not target_user:
+        return jsonify({"error": "One or both users not found"}), 404
+
+    # Add target_user to the outgoing connections of requesting_user
+    if not requesting_user.outgoing_connections.filter_by(id=target_user.id).first():
+        requesting_user.outgoing_connections.append(target_user)
+        db.session.commit()
+        return jsonify({"message": "Connection added successfully"}), 200
+    else:
+        return jsonify({"message": "Connection already exists"}), 200
