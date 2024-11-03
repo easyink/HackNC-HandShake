@@ -30,8 +30,8 @@ class User(db.Model):
         "design": 0, "color": "#FFFFFF"
     })
     
-    instagram = db.Column(db.String(120), unique=True)
-    snapchat = db.Column(db.String(120), unique=True)
+    instagram = db.Column(db.String(120))
+    snapchat = db.Column(db.String(120))
     other = db.Column(db.String(120))
     fcm_token = db.Column(db.String(255), nullable=True)  
 
