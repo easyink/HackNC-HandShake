@@ -78,3 +78,7 @@ server/__pycache__/
 .vs/
 
 server/auth/__pycache__/
+
+server/auth/handshake-nc-firebase-adminsdk-atc6h-dc4158f89c.json
+
+main.db

@@ -4,12 +4,9 @@ from server.auth import auth_bp
 from server.config import db
 import firebase_admin
 from firebase_admin import auth, credentials, initialize_app
-from flask import request, jsonify
-from server.auth.models import User
-from server.config import db
 
 # cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
-cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
+cred = credentials.Certificate("C:\\Users\\Erdem\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-dc4158f89c.json")
 firebase_admin.initialize_app(cred)
 
 def verify_firebase_token(id_token):
@@ -29,36 +26,39 @@ def signup():
         data = request.get_json()
 
         # Extract data from request
-        id = data.get("id")
-        name = data.get("name")
-        phone_number = data.get("number")
-        bio = data.get("bio")
-        interests = data.get("interests", [])
-        songs = data.get("songs", [])
-        handshake_card = data.get("card", {"design": 0, "color": "#FFFFFF"})
-        instagram = data.get("instagram")
-        snapchat = data.get("snapchat")
-        other = data.get("other")
+        token = request.headers.get("Authorization")
+        id = verify_firebase_token(token)
+        if token:
+            name = data.get("name")
+            phone_number = data.get("phoneNumber")
+            bio = data.get("bio")
+            interests = data.get("interests", [])
+            songs = data.get("songs", [])
+            handshake_card = data.get("handshakeCard", {"design": 0, "color": "#FFFFFF"})
+            instagram = data.get("instagram")
+            snapchat = data.get("snapchat")
+            other = data.get("other")
 
-        # Create a new User object
-        new_user = User(
-            id=id,
-            name=name,
-            phone_number=phone_number,
-            bio=bio,
-            interests=interests,
-            songs=songs,
-            handshake_card=handshake_card,
-            instagram=instagram,
-            snapchat=snapchat,
-            other=other
-        )
+            # Create a new User object
+            new_user = User(
+                id=id,
+                name=name,
+                phone_number=phone_number,
+                bio=bio,
+                interests=interests,
+                songs=songs,
+                handshake_card=handshake_card,
+                instagram=instagram,
+                snapchat=snapchat,
+                other=other
+            )
 
-        # Add the new user to the session and commit
-        db.session.add(new_user)
-        db.session.commit()
+            # Add the new user to the session and commit
+            db.session.add(new_user)
+            db.session.commit()
 
-        return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
+            return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
+        return jsonify({"message": "User does not exist", "user_id": new_user.id}), 400
 
 @auth_bp.route('/get_public_data/<int:user_id>/<int:requester_id>', methods=['GET'])
 def get_public_data(user_id, requester_id):
