@@ -21,7 +21,7 @@ def verify_firebase_token(id_token):
         decoded_token = auth.verify_id_token(id_token)
         uid = decoded_token['uid']
         # Perform any additional checks or authentication steps here
-        return uid  # or other information you want to use
+        return uid[:26]  # or other information you want to use
     except auth.InvalidIdTokenError:
         print("Invalid ID token.")
         return None
@@ -54,7 +54,7 @@ def signup():
 
             # Create a new User object
             new_user = User(
-                id=id[:26],
+                id=id,
                 name=name,
                 phone_number=phone_number,
                 bio=bio,
