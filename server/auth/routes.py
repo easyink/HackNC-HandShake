@@ -52,28 +52,48 @@ def signup():
             snapchat = data.get("snapchat")
             other = data.get("other")
 
-            # Create a new User object
-            new_user = User(
-                id=id,
-                name=name,
-                phone_number=phone_number,
-                bio=bio,
-                interests=interests,
-                songs=songs,
-                handshake_card=handshake_card,
-                instagram=instagram,
-                snapchat=snapchat,
-                other=other
-            )
+            # Check if user already exists
+            existing_user = User.query.get(id)
+            
+            if existing_user:
+                # Update existing user's fields
+                existing_user.name = name
+                existing_user.phone_number = phone_number
+                existing_user.bio = bio
+                existing_user.interests = interests
+                existing_user.songs = songs
+                existing_user.handshake_card = handshake_card
+                existing_user.instagram = instagram
+                existing_user.snapchat = snapchat
+                existing_user.other = other
+                message = "User updated successfully"
+            else:
+                # Create a new User object if not existing
+                existing_user = User(
+                    id=id,
+                    name=name,
+                    phone_number=phone_number,
+                    bio=bio,
+                    interests=interests,
+                    songs=songs,
+                    handshake_card=handshake_card,
+                    instagram=instagram,
+                    snapchat=snapchat,
+                    other=other
+                )
+                db.session.add(existing_user)
+                message = "User created successfully"
 
-            # Add the new user to the session and commit
+
+            # Commit the changes
             try:
-                db.session.add(new_user)
                 db.session.commit()
-            except:
-                return jsonify({"message": "Fields conflict with existing users", "user_id": new_user.id}), 200
+            except Exception as e:
+                db.session.rollback()
+                return jsonify({"message": "Database error", "error": str(e)}), 500
 
-            return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
+            return jsonify({"message": message, "user_id": existing_user.id}), 200
+
         return jsonify({"message": "User does not exist", "user_id": id}), 400
 
 @auth_bp.route('/get_public_data/<string:user_id>', methods=['GET'])
