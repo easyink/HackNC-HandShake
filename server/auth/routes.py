@@ -54,7 +54,7 @@ def signup():
 
             # Create a new User object
             new_user = User(
-                id=id,
+                id=id[:31],
                 name=name,
                 phone_number=phone_number,
                 bio=bio,
@@ -76,7 +76,7 @@ def signup():
             return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
         return jsonify({"message": "User does not exist", "user_id": id}), 400
 
-@auth_bp.route('/get_public_data/<string:user_id>/', methods=['GET'])
+@auth_bp.route('/get_public_data/<string:user_id>', methods=['GET'])
 def get_public_data(user_id):
     """
     Retrieve public data for a specific user by user_id.
