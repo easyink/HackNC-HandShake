@@ -82,6 +82,7 @@ def get_public_data(user_id, requester_id):
 
     # Construct the public data response
     public_data = {
+        "name": user.name,
         "bio": user.bio,
         "interests": intersecting_interests,
         "songs": user.songs,
