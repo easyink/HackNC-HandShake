@@ -222,3 +222,22 @@ def connect(id):
         return jsonify({"message": "Connection added successfully"}), 200
     else:
         return jsonify({"message": "Connection already exists"}), 200
+
+@auth_bp.route("/update_fcm_token", methods=["POST"])
+def update_fcm_token():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    fcm_token = data.get("fcm_token")
+    
+    if not user_id or not fcm_token:
+        return jsonify({"error": "User ID and FCM token are required"}), 400
+
+    # Retrieve the user and update their FCM token
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    user.fcm_token = fcm_token
+    db.session.commit()
+
+    return jsonify({"message": "FCM token updated successfully"}), 200

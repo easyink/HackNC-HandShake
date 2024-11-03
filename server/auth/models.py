@@ -33,6 +33,7 @@ class User(db.Model):
     instagram = db.Column(db.String(120), unique=True)
     snapchat = db.Column(db.String(120), unique=True)
     other = db.Column(db.String(120))
+    fcm_token = db.Column(db.String(255), nullable=True)  
 
     def __init__(self, name, phone_number, id=None, bio=None, interests=None, songs=None, 
                  handshake_card=None, instagram=None, snapchat=None, other=None):
