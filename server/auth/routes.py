@@ -4,12 +4,15 @@ from server.auth import auth_bp
 from server.config import db
 import firebase_admin
 from firebase_admin import auth, credentials, initialize_app
-from flask import request, jsonify
-from server.auth.models import User
-from server.config import db
+import os
+import json
 
 # cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
-cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
+# cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
+current_directory = os.path.dirname(os.path.abspath(__file__))
+firebase_path = os.path.join(current_directory, 'firebase.json')
+
+cred = credentials.Certificate(firebase_path)
 firebase_admin.initialize_app(cred)
 
 def verify_firebase_token(id_token):
@@ -20,6 +23,13 @@ def verify_firebase_token(id_token):
         # Perform any additional checks or authentication steps here
         return uid  # or other information you want to use
     except auth.InvalidIdTokenError:
+        print("Invalid ID token.")
+        return None
+    except auth.ExpiredIdTokenError:
+        print("Token has expired.")
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {e}")
         return None
     
 from server.auth import auth_bp
@@ -29,36 +39,39 @@ def signup():
         data = request.get_json()
 
         # Extract data from request
-        id = data.get("id")
-        name = data.get("name")
-        phone_number = data.get("number")
-        bio = data.get("bio")
-        interests = data.get("interests", [])
-        songs = data.get("songs", [])
-        handshake_card = data.get("card", {"design": 0, "color": "#FFFFFF"})
-        instagram = data.get("instagram")
-        snapchat = data.get("snapchat")
-        other = data.get("other")
+        token = request.headers.get("Authorization")
+        id = verify_firebase_token(token)
+        if token and id:
+            name = data.get("name")
+            phone_number = data.get("phoneNumber")
+            bio = data.get("bio")
+            interests = data.get("interests", {})
+            songs = data.get("songs", {})
+            handshake_card = data.get("handshakeCard", {"design": 0, "color": "#FFFFFF"})
+            instagram = data.get("instagram")
+            snapchat = data.get("snapchat")
+            other = data.get("other")
 
-        # Create a new User object
-        new_user = User(
-            id=id,
-            name=name,
-            phone_number=phone_number,
-            bio=bio,
-            interests=interests,
-            songs=songs,
-            handshake_card=handshake_card,
-            instagram=instagram,
-            snapchat=snapchat,
-            other=other
-        )
+            # Create a new User object
+            new_user = User(
+                id=id,
+                name=name,
+                phone_number=phone_number,
+                bio=bio,
+                interests=interests,
+                songs=songs,
+                handshake_card=handshake_card,
+                instagram=instagram,
+                snapchat=snapchat,
+                other=other
+            )
 
-        # Add the new user to the session and commit
-        db.session.add(new_user)
-        db.session.commit()
+            # Add the new user to the session and commit
+            db.session.add(new_user)
+            db.session.commit()
 
-        return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
+            return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
+        return jsonify({"message": "User does not exist", "user_id": id}), 400
 
 @auth_bp.route('/get_public_data/<int:user_id>/<int:requester_id>', methods=['GET'])
 def get_public_data(user_id, requester_id):
@@ -96,12 +109,24 @@ def get_public_data(user_id, requester_id):
 @auth_bp.route('/get_all_user_data/<int:user_id>', methods=['GET'])
 def get_all_user_data(user_id):
     """
-    Retrieve all data for a specific user by user_id.
+    Retrieve all data for a specific user by user_id, if the requesting user has an incoming connection with this user.
     """
+    token = request.headers.get("Authorization")
+    requesting_user_id = verify_firebase_token(token)
+
+    if not requesting_user_id:
+        return jsonify({"error": "Requesting user ID is required"}), 400
+
     # Query for the user by ID
     user = User.query.get(user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+    requesting_user = User.query.get(requesting_user_id)
+
+    if not user or not requesting_user:
+        return jsonify({"error": "One or both users not found"}), 404
+
+    # Check if the requesting user has an incoming connection from the target user
+    if not requesting_user.incoming_connections.filter_by(id=user.id).first():
+        return jsonify({"error": "Access denied: No incoming connection from this user"}), 403
 
     # Create a dictionary with all user data
     all_user_data = {
@@ -116,7 +141,7 @@ def get_all_user_data(user_id):
         "snapchat": user.snapchat,
         "other": user.other,
     }
-    
+
     return jsonify(all_user_data), 200
 
 

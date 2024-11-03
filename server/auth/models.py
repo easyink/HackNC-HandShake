@@ -9,7 +9,7 @@ connections = db.Table(
 class User(db.Model):
     __tablename__ = 'users'
     
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     phone_number = db.Column(db.BigInteger, nullable=False, unique=True)
     bio = db.Column(db.String(500))
