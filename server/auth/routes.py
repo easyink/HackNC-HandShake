@@ -4,12 +4,14 @@ from server.auth import auth_bp
 from server.config import db
 import firebase_admin
 from firebase_admin import auth, credentials, initialize_app
-from flask import request, jsonify
-from server.auth.models import User
-from server.config import db
+import os
 
 # cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
-cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
+# cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
+current_directory = os.path.dirname(os.path.abspath(__file__))
+firebase_path = os.path.join(current_directory, 'firebase.json')
+
+cred = credentials.Certificate(firebase_path)
 firebase_admin.initialize_app(cred)
 
 def verify_firebase_token(id_token):
