@@ -76,8 +76,8 @@ def signup():
             return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
         return jsonify({"message": "User does not exist", "user_id": id}), 400
 
-@auth_bp.route('/get_public_data/<int:user_id>/<int:requester_id>', methods=['GET'])
-def get_public_data(user_id, requester_id):
+@auth_bp.route('/get_public_data/<string:user_id>/', methods=['GET'])
+def get_public_data(user_id):
     """
     Retrieve public data for a specific user by user_id.
     Only returns the bio, handshake_card, songs, other profile fields,
@@ -85,22 +85,24 @@ def get_public_data(user_id, requester_id):
     """
     # Query for both the specified user and the requester
     user = User.query.get(user_id)
-    requester = User.query.get(requester_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    # requester = User.query.get(requester_id)
     
-    if not user or not requester:
-        return jsonify({"error": "One or both users not found"}), 404
+    # if not user or not requester:
+    #     return jsonify({"error": "One or both users not found"}), 404
 
-    # Calculate the intersecting interests if both have interests
-    if user.interests and requester.interests:
-        intersecting_interests = list(set(user.interests).intersection(set(requester.interests)))
-    else:
-        intersecting_interests = []
+    # # Calculate the intersecting interests if both have interests
+    # if user.interests and requester.interests:
+    #     intersecting_interests = list(set(user.interests).intersection(set(requester.interests)))
+    # else:
+    #     intersecting_interests = []
 
     # Construct the public data response
     public_data = {
         "name": user.name,
         "bio": user.bio,
-        "interests": intersecting_interests,
+        "interests": user.interests,
         "songs": user.songs,
         "other": user.other,
         "handshake_card": user.handshake_card
