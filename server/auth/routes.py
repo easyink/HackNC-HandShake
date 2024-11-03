@@ -57,6 +57,8 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
+        return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
+
 @auth_bp.route('/get_public_data/<int:user_id>/<int:requester_id>', methods=['GET'])
 def get_public_data(user_id, requester_id):
     """
