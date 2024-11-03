@@ -246,3 +246,35 @@ def update_fcm_token():
     db.session.commit()
 
     return jsonify({"message": "FCM token updated successfully"}), 200
+
+
+@auth_bp.route("/connectv2/<int:id>", methods=["POST"])
+def connectv2(id):
+    requesting_user_id = request.json.get("requesting_user_id")
+    
+    if not requesting_user_id:
+        return jsonify({"error": "Requesting user ID is required"}), 400
+
+    # Retrieve the requesting user and the target user to connect
+    requesting_user = User.query.get(requesting_user_id)
+    target_user = User.query.get(id)
+
+    if not requesting_user or not target_user:
+        return jsonify({"error": "One or both users not found"}), 404
+
+    # Add target_user to the outgoing connections of requesting_user
+    if not requesting_user.outgoing_connections.filter_by(id=target_user.id).first():
+        requesting_user.outgoing_connections.append(target_user)
+        db.session.commit()
+
+        # Send push notification to the target user if they have an FCM token
+        if target_user.fcm_token:
+            send_push_notification(
+                token=target_user.fcm_token,
+                title="New Connection Request",
+                body=f"{requesting_user.name} wants to connect with you!"
+            )
+
+        return jsonify({"message": "Connection added successfully"}), 200
+    else:
+        return jsonify({"message": "Connection already exists"}), 200
