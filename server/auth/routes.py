@@ -91,7 +91,6 @@ def get_public_data(user_id, requester_id):
     return jsonify(public_data), 200
 
 
-
 @auth_bp.route('/get_all_user_data/<int:user_id>', methods=['GET'])
 def get_all_user_data(user_id):
     """
@@ -117,3 +116,59 @@ def get_all_user_data(user_id):
     }
     
     return jsonify(all_user_data), 200
+
+
+@auth_bp.route('/sort_connections_by_interests/<int:user_id>', methods=['GET'])
+def sort_connections_by_interests(user_id):
+    """
+    Sort a user's connections based on the number of mutual interests, from most to least.
+    """
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    connections = user.outgoing_connections.all()  # Get all connections
+    connections_with_interest_count = []
+
+    # Calculate mutual interests for each connection
+    for connection in connections:
+        mutual_interests = set(user.interests).intersection(set(connection.interests))
+        connections_with_interest_count.append({
+            "id": connection.id,
+            "name": connection.name,
+            "mutual_interest_count": len(mutual_interests),
+            "mutual_interests": list(mutual_interests)
+        })
+
+    # Sort connections by the number of mutual interests (descending)
+    sorted_connections = sorted(connections_with_interest_count, key=lambda x: x['mutual_interest_count'], reverse=True)
+
+    return jsonify(sorted_connections), 200
+
+
+@auth_bp.route('/sort_connections_by_songs/<int:user_id>', methods=['GET'])
+def sort_connections_by_songs(user_id):
+    """
+    Sort a user's connections based on the number of mutually liked songs, from most to least.
+    """
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    connections = user.outgoing_connections.all()  # Get all connections
+    connections_with_song_count = []
+
+    # Calculate mutual songs for each connection
+    for connection in connections:
+        mutual_songs = set(user.songs).intersection(set(connection.songs))
+        connections_with_song_count.append({
+            "id": connection.id,
+            "name": connection.name,
+            "mutual_song_count": len(mutual_songs),
+            "mutual_songs": list(mutual_songs)
+        })
+
+    # Sort connections by the number of mutual songs (descending)
+    sorted_connections = sorted(connections_with_song_count, key=lambda x: x['mutual_song_count'], reverse=True)
+
+    return jsonify(sorted_connections), 200
