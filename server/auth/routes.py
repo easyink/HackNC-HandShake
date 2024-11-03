@@ -71,7 +71,7 @@ def signup():
                 db.session.add(new_user)
                 db.session.commit()
             except:
-                return jsonify({"message": "Fields conflict with existing users", "user_id": new_user.id}), 401
+                return jsonify({"message": "Fields conflict with existing users", "user_id": new_user.id}), 200
 
             return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
         return jsonify({"message": "User does not exist", "user_id": id}), 400
@@ -105,7 +105,10 @@ def get_public_data(user_id):
         "interests": user.interests,
         "songs": user.songs,
         "other": user.other,
-        "handshake_card": user.handshake_card
+        "handshakeCard": user.handshake_card,
+        "instagram": "",
+        "snapchat": "",
+        "phoneNumber": "",
     }
     
     return jsonify(public_data), 200
