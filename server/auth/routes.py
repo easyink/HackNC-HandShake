@@ -54,7 +54,7 @@ def signup():
 
             # Create a new User object
             new_user = User(
-                id=id[:31],
+                id=id[:26],
                 name=name,
                 phone_number=phone_number,
                 bio=bio,
