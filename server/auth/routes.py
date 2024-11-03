@@ -94,12 +94,22 @@ def get_public_data(user_id, requester_id):
 @auth_bp.route('/get_all_user_data/<int:user_id>', methods=['GET'])
 def get_all_user_data(user_id):
     """
-    Retrieve all data for a specific user by user_id.
+    Retrieve all data for a specific user by user_id, if the requesting user has an incoming connection with this user.
     """
+    requesting_user_id = request.json.get("requesting_user_id")
+    if not requesting_user_id:
+        return jsonify({"error": "Requesting user ID is required"}), 400
+
     # Query for the user by ID
     user = User.query.get(user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+    requesting_user = User.query.get(requesting_user_id)
+
+    if not user or not requesting_user:
+        return jsonify({"error": "One or both users not found"}), 404
+
+    # Check if the requesting user has an incoming connection from the target user
+    if not requesting_user.incoming_connections.filter_by(id=user.id).first():
+        return jsonify({"error": "Access denied: No incoming connection from this user"}), 403
 
     # Create a dictionary with all user data
     all_user_data = {
@@ -114,7 +124,7 @@ def get_all_user_data(user_id):
         "snapchat": user.snapchat,
         "other": user.other,
     }
-    
+
     return jsonify(all_user_data), 200
 
 
