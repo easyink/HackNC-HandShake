@@ -24,4 +24,27 @@ def get_public_data(user_id):
     return jsonify(public_data), 200
 
 
+@auth_bp.route('/get_all_user_data/<int:user_id>', methods=['GET'])
+def get_all_user_data(user_id):
+    """
+    Retrieve all data for a specific user by user_id.
+    """
+    # Query for the user by ID
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
 
+    # Create a dictionary with all user data
+    all_user_data = {
+        "id": user.id,
+        "name": user.name,
+        "phone_number": user.phone_number,
+        "bio": user.bio,
+        "interests": user.interests,
+        "songs": user.songs,
+        "instagram": user.instagram,
+        "snapchat": user.snapchat,
+        "other": user.other,
+    }
+    
+    return jsonify(all_user_data), 200
