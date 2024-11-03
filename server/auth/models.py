@@ -16,6 +16,15 @@ class User(db.Model):
     bio = db.Column(db.String(500))
     interests = db.Column(db.JSON)
     songs = db.Column(db.JSON)
+
+    outgoing_connections = db.relationship(
+        'User',
+        secondary='user_connections',
+        primaryjoin=(id == db.ForeignKey('user_connections.user_id')),
+        secondaryjoin=(id == db.ForeignKey('user_connections.connection_id')),
+        backref=db.backref('incoming_connections', lazy='dynamic'),
+        lazy='dynamic'
+    )
     
     # handshake_card as JSON
     handshake_card = db.Column(db.JSON, nullable=False, default={
@@ -25,14 +34,6 @@ class User(db.Model):
     instagram = db.Column(db.String(120), unique=True)
     snapchat = db.Column(db.String(120), unique=True)
     other = db.Column(db.String(120))
-    
-    # Many-to-many relationship with itself for connections
-    connections = db.relationship(
-        'User', secondary=connections,
-        primaryjoin=(connections.c.user_id == id),
-        secondaryjoin=(connections.c.connection_id == id),
-        backref=db.backref('connected_to', lazy='dynamic'), lazy='dynamic'
-    )
 
     def __init__(self, name, phone_number, bio=None, interests=None, songs=None, 
                  handshake_card=None, instagram=None, snapchat=None, other=None):
@@ -46,18 +47,9 @@ class User(db.Model):
         self.snapchat = snapchat
         self.other = other
 
-    def add_connection(self, user):
-        """Add a connection if it doesn't already exist."""
-        if not self.is_connected(user):
-            self.connections.append(user)
-            db.session.commit()
 
-    def remove_connection(self, user):
-        """Remove a connection if it exists."""
-        if self.is_connected(user):
-            self.connections.remove(user)
-            db.session.commit()
-
-    def is_connected(self, user):
-        """Check if a connection exists."""
-        return self.connections.filter(connections.c.connection_id == user.id).count() > 0
+class UserConnections(db.Model):
+    __tablename__ = 'user_connections'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    connection_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
