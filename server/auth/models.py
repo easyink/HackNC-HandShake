@@ -2,14 +2,14 @@ from server.config import db
 
 connections = db.Table(
     'connections',
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
-    db.Column('connection_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    db.Column('user_id', db.String, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('connection_id', db.String, db.ForeignKey('users.id'), primary_key=True)
 )
 
 class User(db.Model):
     __tablename__ = 'users'
     
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     phone_number = db.Column(db.BigInteger, nullable=False, unique=True)
     bio = db.Column(db.String(500))
