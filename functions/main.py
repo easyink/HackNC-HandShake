@@ -10,35 +10,35 @@ import hashlib
 
 initialize_app()
 
-# input_json
-@https_fn.on_request()
-def on_request_example(req: https_fn.Request) -> https_fn.Response:
-    return https_fn.Response("Hello world!")
+# # input_json
+# @https_fn.on_request()
+# def on_request_example(req: https_fn.Request) -> https_fn.Response:
+#     return https_fn.Response("Hello world!")
 
-# @functions.https.on_call
+# # @functions.https.on_call
 
 
 
-@https_fn.on_call()
-def echoString(request):
-    #this is a test function
-    try:
-        # Log raw request data
-        print("Raw request data:", request)
+# @https_fn.on_call()
+# def echoString(request):
+#     #this is a test function
+#     try:
+#         # Log raw request data
+#         print("Raw request data:", request)
         
-        # Extract 'text' field from the data payload
-        text = request.data.get('text', None)
+#         # Extract 'text' field from the data payload
+#         text = request.data.get('text', None)
         
-        if text is None:
-            print("No 'text' field found in request data.")
-            return {'error': 'No text provided'}, 400
+#         if text is None:
+#             print("No 'text' field found in request data.")
+#             return {'error': 'No text provided'}, 400
         
-        print("Returning response:", text)
-        return {'response': text}  # Return as dictionary
+#         print("Returning response:", text)
+#         return {'response': text}  # Return as dictionary
 
-    except Exception as e:
-        print(f"Exception occurred: {e}")  # Log the exception for debugging
-        return {'error': 'An internal error occurred', 'details': str(e)}, 500
+#     except Exception as e:
+#         print(f"Exception occurred: {e}")  # Log the exception for debugging
+#         return {'error': 'An internal error occurred', 'details': str(e)}, 500
     
 # @https_fn.on_call()
 # def generate_phone_hash(input_num):
@@ -144,3 +144,29 @@ def request_public_data(input_pid_json):
 	}
 
 	return public_data
+
+
+def handshake_inquiry(request_id, sender_id, recipient_id):
+	#push notification the request to the recipient
+	print("sending to recipient phone!")
+
+@https_fn.on_call()
+def request_handshake(id_json):
+
+
+	#generate a unique request id for this
+	sender_id = id_json.data.get("sender_id")
+	recipient_id = id_json.data.get("recipient_id")
+
+	hash_obj = hashlib.blake2s(digest_size=4)
+
+	data = (sender_id + recipient_id).encode()
+	hash_obj.update(data)
+
+	unique_id = hash_obj.hexdigest()	
+	#pass request to recipient
+
+
+	handshake_inquiry(unique_id, sender_id, recipient_id)
+
+	return {"message": "Sucessfully sent request"}
