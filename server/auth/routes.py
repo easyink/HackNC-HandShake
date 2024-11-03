@@ -5,6 +5,7 @@ from server.config import db
 import firebase_admin
 from firebase_admin import auth, credentials, initialize_app
 import os
+import json
 
 # cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
 # cred = credentials.Certificate("C:\\Users\\adsle\\Source\\Repos\\HackNC-HandShake\\server\\auth\\handshake-nc-firebase-adminsdk-atc6h-30d3ad6f7d.json")
@@ -22,6 +23,13 @@ def verify_firebase_token(id_token):
         # Perform any additional checks or authentication steps here
         return uid  # or other information you want to use
     except auth.InvalidIdTokenError:
+        print("Invalid ID token.")
+        return None
+    except auth.ExpiredIdTokenError:
+        print("Token has expired.")
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {e}")
         return None
     
 from server.auth import auth_bp
@@ -33,14 +41,12 @@ def signup():
         # Extract data from request
         token = request.headers.get("Authorization")
         id = verify_firebase_token(token)
-        print(token)
-        print(id)
         if token and id:
             name = data.get("name")
             phone_number = data.get("phoneNumber")
             bio = data.get("bio")
-            interests = data.get("interests", [])
-            songs = data.get("songs", [])
+            interests = data.get("interests", {})
+            songs = data.get("songs", {})
             handshake_card = data.get("handshakeCard", {"design": 0, "color": "#FFFFFF"})
             instagram = data.get("instagram")
             snapchat = data.get("snapchat")
@@ -219,3 +225,22 @@ def connect(id):
         return jsonify({"message": "Connection added successfully"}), 200
     else:
         return jsonify({"message": "Connection already exists"}), 200
+
+@auth_bp.route("/update_fcm_token", methods=["POST"])
+def update_fcm_token():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    fcm_token = data.get("fcm_token")
+    
+    if not user_id or not fcm_token:
+        return jsonify({"error": "User ID and FCM token are required"}), 400
+
+    # Retrieve the user and update their FCM token
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    user.fcm_token = fcm_token
+    db.session.commit()
+
+    return jsonify({"message": "FCM token updated successfully"}), 200

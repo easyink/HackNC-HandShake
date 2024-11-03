@@ -9,7 +9,7 @@ connections = db.Table(
 class User(db.Model):
     __tablename__ = 'users'
     
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     phone_number = db.Column(db.BigInteger, nullable=False, unique=True)
     bio = db.Column(db.String(500))
@@ -33,6 +33,7 @@ class User(db.Model):
     instagram = db.Column(db.String(120), unique=True)
     snapchat = db.Column(db.String(120), unique=True)
     other = db.Column(db.String(120))
+    fcm_token = db.Column(db.String(255), nullable=True)  
 
     def __init__(self, name, phone_number, id=None, bio=None, interests=None, songs=None, 
                  handshake_card=None, instagram=None, snapchat=None, other=None):
